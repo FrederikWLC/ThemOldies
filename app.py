@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import stripe
 from scripts import tabledef
 from scripts import forms
 from scripts import helpers
@@ -7,9 +7,11 @@ from flask import Flask, redirect, url_for, render_template, request, session
 import json
 import sys
 import os
-
+from settings import stripe_plan_id, stripe_public_key, stripe_secret_key
 app = Flask(__name__)
 app.secret_key = os.urandom(12)  # Generic key for dev purposes only
+stripe.api_key = stripe_secret_key
+
 
 # Heroku
 #from flask_heroku import Heroku
@@ -17,7 +19,9 @@ app.secret_key = os.urandom(12)  # Generic key for dev purposes only
 
 # ======== Routing =========================================================== #
 # -------- Login ------------------------------------------------------------- #
-@app.route('/', methods=['GET', 'POST'])
+
+
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     if not session.get('logged_in'):
         form = forms.LoginForm(request.form)
@@ -77,6 +81,52 @@ def settings():
         user = helpers.get_user()
         return render_template('settings.html', user=user)
     return redirect(url_for('login'))
+
+
+# -------- Home page ---------------------------------------------------------- #
+@app.route("/")
+@app.route("/index")
+@app.route("/main")
+@app.route('/home', methods=['GET', 'POST'])
+def home():
+    if session.get('logged_in'):
+        user = helpers.get_user()
+        render_template("home.html", user=user)
+    else:
+        return redirect(url_for('login'))
+
+
+@app.route("/sub")
+@app.route("/subscribe", methods=['GET', 'POST'])
+def subscribe():
+    session = stripe.checkout.Session.create(
+        payment_method_types=['card'],
+        subscription_data={
+            'items': [{
+                'plan': stripe_plan_id,
+            }],
+        },
+        success_url='http://localhost:5000/success',
+        cancel_url='http://localhost:5000/cancel',
+    )
+
+    print(session)
+    print("+" * 42)
+    _id = session.get("id")
+    print(_id)
+    user = helpers.get_user()
+    user.subscription = True
+    return render_template('subscribe.html', _id=_id, stripe_public_key=stripe_public_key)
+
+
+@app.route('/success')
+def success():
+    return render_template('success.html')
+
+
+@app.route('/cancel')
+def cancel():
+    return "CANCELED!"
 
 
 # ======== Main ============================================================== #

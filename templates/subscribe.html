@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block body %}
+{% include "navbar.html" %}
+{% endblock %}
+{% block scripts %}
+<script src="../static/js/scripts.js"></script>
+
+<script src="https://js.stripe.com/v3/"></script>
+
+<script>
+ var stripe = Stripe('{{stripe_public_key}}');
+ stripe.redirectToCheckout({
+     sessionId: "{{_id}}"
+ }).then(function (result) {
+     console.log(result)
+ });
+</script>
+
+{% endblock %}
