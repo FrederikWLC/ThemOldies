@@ -19,8 +19,6 @@ stripe.api_key = stripe_secret_key
 
 # ======== Routing =========================================================== #
 # -------- Login ------------------------------------------------------------- #
-
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if not session.get('logged_in'):
@@ -46,7 +44,7 @@ def logout():
     return redirect(url_for('login'))
 
 
-# -------- Signup ---------------------------------------------------------- #
+# -------- Signup Page ---------------------------------------------------------- #
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if not session.get('logged_in'):
@@ -67,7 +65,7 @@ def signup():
     return redirect(url_for('login'))
 
 
-# -------- Settings ---------------------------------------------------------- #
+# -------- Settings Page ---------------------------------------------------------- #
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
     if session.get('logged_in'):
@@ -91,37 +89,43 @@ def settings():
 def home():
     if session.get('logged_in'):
         user = helpers.get_user()
-        render_template("home.html", user=user)
-    else:
-        return redirect(url_for('login'))
+        return render_template("home.html", user=user)
+    return render_template("home.html")
+
+# -------- Subscribe page (stripe)---------------------------------------------------------- #
 
 
 @app.route("/sub")
 @app.route("/subscribe", methods=['GET', 'POST'])
 def subscribe():
-    session = stripe.checkout.Session.create(
-        payment_method_types=['card'],
-        subscription_data={
-            'items': [{
-                'plan': stripe_plan_id,
-            }],
-        },
-        success_url='http://localhost:5000/success',
-        cancel_url='http://localhost:5000/cancel',
-    )
+    if session.get('logged_in'):
+        buy = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            subscription_data={
+                'items': [{
+                    'plan': stripe_plan_id,
+                }],
+            },
+            success_url='http://localhost:5000/success',
+            cancel_url='http://localhost:5000/cancel',
+        )
 
-    print(session)
-    print("+" * 42)
-    _id = session.get("id")
-    print(_id)
-    user = helpers.get_user()
-    user.subscription = True
-    return render_template('subscribe.html', _id=_id, stripe_public_key=stripe_public_key)
+        print(buy)
+        print("+" * 42)
+        _id = buy.get("id")
+        print(_id)
+        user = helpers.get_user()
+        user.subscription = True
+        return render_template('subscribe.html', _id=_id, stripe_public_key=stripe_public_key, user=user)
+    return redirect(url_for('login'))
+# -------- Subscription Succes Page ---------------------------------------------------------- #
 
 
 @app.route('/success')
 def success():
     return render_template('success.html')
+
+# -------- Subscription Cancel page ---------------------------------------------------------- #
 
 
 @app.route('/cancel')
