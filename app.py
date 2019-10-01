@@ -8,7 +8,9 @@ import json
 import sys
 import os
 from settings import stripe_plan_id, stripe_public_key, stripe_secret_key
+from flask_dropzone import Dropzone
 app = Flask(__name__)
+dropzone = Dropzone(app)
 app.secret_key = os.urandom(12)  # Generic key for dev purposes only
 stripe.api_key = stripe_secret_key
 
@@ -89,6 +91,8 @@ def settings():
 def home():
     if session.get('logged_in'):
         user = helpers.get_user()
+        if user.subscription:
+            return redirect(url_for('upload'))
         return render_template("home.html", user=user)
     return render_template("home.html")
 
@@ -131,6 +135,23 @@ def success():
 @app.route('/cancel')
 def cancel():
     return "CANCELED!"
+
+#---------- Dropzone -------------------------------------------------------------------------
+@app.route('/upload', methods=['POST', 'GET'])
+def upload():
+    if session.get('logged_in'):
+        user = helpers.get_user()
+        if user.subscription: 
+            if request.method == 'POST':
+                for key, f in request.files.items():
+                    if key.startswith('file'):
+                        #Handling of .csv file
+                        pass
+            return render_template('upload.html')
+        return redirect(url_for("subscribe"))
+    return redirect(url_for("login"))
+
+    
 
 
 # ======== Main ============================================================== #
