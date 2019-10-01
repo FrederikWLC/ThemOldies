@@ -1,15 +1,22 @@
-<html lang="en">
-<head>
+{% extends "base.html" %}
+{% include "navbar.html" %}
+
+{% block head %}
     <meta charset="UTF-8">
     <title>Flask-Dropzone Demo: Click Upload</title>
     {{ dropzone.load_css() }}
     {{ dropzone.style('border: 2px dashed #0087F7; margin: 10px 0 10px; min-height: 400px;') }}
-</head>
-<body>
+{% endblock %}
+
+{% block body %}
+<section class="hero is-primary is-bold is-large">
+  <div class="hero-body">
 {{ dropzone.create('/') }}
 <button id="upload">Upload</button>
-
 {{ dropzone.load_js() }}
 {{ dropzone.config() }}
-</body>
-</html>
+</div> </section>
+{% endblock %}
+{% block scripts %}
+<script src="../static/js/scripts.js"></script>
+{% endblock %}
