@@ -24,15 +24,15 @@ stripe.api_key = stripe_secret_key
 
 
 # Heroku
-#from flask_heroku import Heroku
-#heroku = Heroku(app)
+# from flask_heroku import Heroku
+# heroku = Heroku(app)
 
 # ======== Routing =========================================================== #
 # -------- Login ------------------------------------------------------------- #
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if not current_user:
+    if not session.get("logged_in"):
         form = forms.LoginForm(request.form)
         if request.method == 'POST':
             username = request.form['username'].lower()
@@ -43,56 +43,96 @@ def login():
                     session['username'] = username
                     user = helper.get_user()
                     login(user, remember=True)
-                    return redirect(url_for("home"))
+                    return json.dumps({'status': 'Login succesful'})
                 flash("Invalid username or password")
                 print("Invalid username or password")
-                return redirect(url_for("login"))
+                return json.dumps({'status': 'Invalid username or password'})
             flash("Both fields required")
             print("Both fields required")
-            return redirect(url_for("login"))
+            return json.dumps({'status': 'Both fields required'})
         return render_template('login.html', form=form)
-    user = helpers.get_user()
-    return render_template('home.html', user=user)
+    return redirect(url_for("home"))
 
 
 @app.route("/logout")
 @login_required
 def logout():
-    session['logged_in'] = False
     logout_user()
+    session['logged_in'] = False
     return redirect(url_for('login'))
 
 
-# -------- Signup Page ---------------------------------------------------------- #
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    if not session.get('logged_in'):
-        form = forms.LoginForm(request.form)
+# -------- Signin Page ---------------------------------------------------------- #
+@app.route('/signin', methods=['GET', 'POST'])
+def signin():
+    if not session.get("logged_in"):
+        form = forms.SigninForm(request.form)
         if request.method == 'POST':
             username = request.form['username'].lower()
             password = helpers.hash_password(request.form['password'])
             email = request.form['email']
             if form.validate():
-                if not helpers.username_taken(username):
-                    helpers.add_user(username, password, email)
+                if helpers.credentials_valid(username, password, email):
                     session['logged_in'] = True
                     session['username'] = username
-                    flash("Signup was succesful")
-                    return redirect(url_for("home"))
+                    session["email"] = email
+                    user = helper.get_user()
+                    login(user, remember=True)
+                    return json.dumps({'status': 'Signin successful'})
+                flash("Invalid username or password")
+                print("Invalid username or password")
+                return json.dumps({'status': 'Invalid username or password'})
+            flash("Both fields required")
+            print("Both fields required")
+            return json.dumps({'status': 'Invalid username or password'})
+        return render_template('signin.html', form=form)
+    return redirect(url_for("home"))
+
+
+# -------- Signup Page ---------------------------------------------------------- #
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if not session.get("logged_in"):
+        form = forms.LoginForm(request.form)
+        if request.method == 'POST':
+            username = request.form['username'].lower()
+            password = helpers.hash_password(request.form['password'])
+            if form.validate():
+                if request.form.get("email", None):
+                    email = request.form['email']
+                    if not helpers.username_taken(username):
+                        helpers.add_user(username, password, email)
+                        session['logged_in'] = True
+                        session['username'] = username
+                        print("Signup was succesful")
+                        flash("Signup was succesful")
+                        return json.dumps({'status': 'Signup successful'})
+                else:
+                    if not helpers.username_taken(username):
+                        session['logged_in'] = True
+                        session['username'] = username
+                        print("Signup was succesful")
+                        flash("Signup was succesful")
+                        return json.dumps({'status': 'Signup successful'})
+                print("Username taken")
                 flash("Username taken")
-                return redirect(url_for("signup"))
+                return json.dumps({'status': 'Username taken'})
+            print("Username and password required")
             flash("Username and password required")
-            return redirect(url_for("signup"))
-        return render_template('login.html', form=form)
-    return redirect(url_for('login'))
+            return json.dumps({'status': 'Username and password required'})
+        if request.form.get("email", None):
+            return render_template('login.html', form=form)
+        return render_template('signin.html', form=form)
+    if "login" in request.url_rule.rule:
+        return redirect(url_for('login'))
+    return redirect(url_for('signin'))
 
 
 # -------- Settings Page ---------------------------------------------------------- #
-
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
-    if session.get('logged_in'):
+    if current_user.is_authenticated:
         if request.method == 'POST':
             password = request.form['password']
             if password != "":
@@ -162,7 +202,7 @@ def cancel():
 @app.route('/upload', methods=['POST', 'GET'])
 @login_required
 def upload():
-    if session.get('logged_in'):
+    if current_user.is_authenticated:
         user = helpers.get_user()
         if user.subscription:
             if request.method == 'POST':
@@ -171,7 +211,7 @@ def upload():
                         # Handling of .csv file
                         pass
             return render_template('upload.html')
-        return redirect(url_for("subscribe"))
+        return redirect(url_for("home"))
     return redirect(url_for("login"))
 
 
