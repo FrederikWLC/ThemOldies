@@ -15,34 +15,7 @@
     </div>
     <div id="navbar-menu-id" class="navbar-menu">
       <div class="navbar-end">
-        <a class="navbar-item">
-          <div class="field">
-            <p class="control has-icons-left">
-              <input class="login-input input is-small is-success" type="text" id="login-user" placeholder="Username">
-                <span class="icon is-small is-left">
-                  <i class="fa fa-user"></i>
-                </span>
-            </p>
-          </div>
-        </a>
-        <a class="navbar-item">
-          <div class="field">
-            <p class="control has-icons-left">
-              <input class="login-input input is-small is-success" type="password" id="login-pass" placeholder="Password">
-                <span class="icon is-small is-left">
-                  <i class="fa fa-lock"></i>
-                </span>
-            </p>
-          </div>
-        </a>
-        <span class="navbar-item">
-          <a id="login-button" class="button is-primary is-inverted" href="/login">
-            <span class="icon">
-              <i class="fa fa-check"></i>
-            </span>
-            <span>Login</span>
-          </a>
-        </span>
+        
       </div>
     </div>
   </nav>
@@ -63,10 +36,15 @@
         <div class="column is-auto">
           <div id="signup-box" class="signup-box">
             <div class="signup-area">
-              <h1 class="title">Login</h1>
-              <div class="field">
+              <h1 class="title">{{ title }}</h1>
+              <form action="" method="post" novalidate>
+                {{ form.hidden_tag() }}
                 <p class="control has-icons-left has-icons-right">
-                  <input id="signup-user" class="input is-success" type="text" placeholder="Username">
+                  {{ form.username(size=32) }}
+                  <br>
+                  {% for error in form.username.errors %}
+                  <span style="color: red;">[{{ error }}]</span>
+                  {% endfor %}
                   <span class="icon is-small is-left">
                     <i class="fa fa-user"></i>
                   </span>
@@ -77,7 +55,12 @@
               </div>
               <div class="field">
                 <p class="control has-icons-left has-icons-right">
-                  <input id="signup-pass" class="input" type="password" placeholder="Password">
+                  {{ form.password(size=32) }}
+                  <br>
+                  {% for error in form.password.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+
                   <span class="icon is-small is-left">
                     <i class="fa fa-lock"></i>
                   </span>
@@ -86,8 +69,10 @@
                   </span>
                 </p>
               </div>
+              <p>{{ form.remember_me() }} Remember me </p>
               <br>
-              <a id="signup-button" class="form-button button is-primary is-inverted is-outlined">Login</a>
+              <p>{{ form.submit() }}</p>
+            </form>
               <br>
               <br>
               <i><a id="feedback" class="feedback"></a></i>
