@@ -106,7 +106,7 @@ def subscribe():
         cancel_url='http://localhost:5000/cancel',
     )
     _id = buy.get("id")
-    current_user.subscription_id = _id
+    current_user.session_id = _id
     db.session.commit()
     return render_template('subscribe.html', _id=_id, stripe_public_key=app.config["STRIPE_PUBLIC_KEY"], user=current_user)
 
@@ -115,7 +115,10 @@ def subscribe():
 @app.route('/success')
 @login_required
 def success():
-    if stripe.Charge.retrieve(current_user.subscription_id)["paid"]:
+    current_user.subscription_id = stripe.checkout.Session.retrieve(current_user.session_id).subscription
+    db.session.commit()
+    status = stripe.Subscription.retrieve(current_user.subscription_id).status
+    if status == "active":
         current_user.is_subscribed = True
         db.session.commit()
     return render_template('success.html')
