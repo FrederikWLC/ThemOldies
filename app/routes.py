@@ -2,33 +2,37 @@
 from flask import redirect, url_for, render_template, request, session, flash
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
-from app import app, db
+from app import app, db, dropzone
 from app.forms import LoginForm, RegistrationForm
 from app.models import User
 import json
-
+import stripe
 
 # ======== Routing =========================================================== #
 # -------- Login ------------------------------------------------------------- #
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for("index"))
+        next_page = request.args.get("next")
+        if not next_page or url_parse(next_page).netloc != "":
+            next_page = url_for("home")
+        return redirect(next_page)
     form = LoginForm()
-    if form.validate_on_submit():
-        if not form.username.data or not form.password.data:
-            flash("Both fields required")
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if not username or not password:
+            print("Both fields required")
             return json.dumps({'status': 'Both fields required'})
-        user = User.query.filter_by(username=form.username.data).first()
-        if user is None or not user.check_password(form.password.data):
-            flash("Invalid username or password")
+        user = User.query.filter_by(username=username).first()
+        if user is None or not user.check_password(password):
+            print("Invalid username or password")
             return json.dumps({'status': 'Invalid username or password'})
-            login_user(user, remember=form.remember_me.data)
-            next_page = request.args.get("next")
-            if not next_page or url_parse(next_page).netloc != "":
-                next_page = url_for("index")
-            return redirect(url_for("index"))
+        login_user(user, remember=True)
+        print("Successfully logged in")
+        return json.dumps({'status': 'Successfully logged in'})
     return render_template("login.html", title="Login", form=form)
 
 
@@ -36,23 +40,35 @@ def login():
 @login_required
 def logout():
     logout_user()
+    print("Succesfully logged out")
     return redirect(url_for('índex'))
 
 
 # -------- Signin Page ---------------------------------------------------------- #
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    print(current_user.is_authenticated)
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('home'))
     form = RegistrationForm()
-    if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
-        user.set_password(form.password.data)
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        email = request.form["email"]
+        if not username or not password or not email:
+            print("All fields required")
+            return json.dumps({'status': 'All fields required'})
+        if not User.query.filter_by(username=username).first() is None:
+            print("Username taken")
+            return json.dumps({'status': 'Username taken'})
+        user = User(username=username, email=email)
+        user.set_password(password)
         db.session.add(user)
         db.session.commit()
-        flash('Congratulations, you are now a member of ThemOldies!')
-        return redirect(url_for("login"))
-    render_template("register.html", title="Register", form=form)
+        login_user(user, remember=True)
+        print("Successfully registered")
+        return json.dumps({'status': 'Successfully registered'})
+    return render_template("register.html", title="Register", form=form)
 
 
 # -------- Settings Page ---------------------------------------------------------- #
@@ -64,7 +80,6 @@ def settings():
 
 # -------- Home page ---------------------------------------------------------- #
 @app.route("/")
-@app.route("/index")
 @app.route("/main")
 @app.route('/home', methods=['GET', 'POST'])
 def home():
@@ -77,31 +92,32 @@ def home():
 @app.route("/subscribe", methods=['GET', 'POST'])
 @login_required
 def subscribe():
-
+    if current_user.is_subscribed:
+        return redirect(url_for("home"))
+    stripe.api_key = app.config["STRIPE_SECRET_KEY"]
     buy = stripe.checkout.Session.create(
         payment_method_types=['card'],
         subscription_data={
             'items': [{
-                'plan': app.config[STRIPE_PLAN_ID],
+                'plan': app.config["STRIPE_PLAN_ID"],
             }],
         },
         success_url='http://localhost:5000/success',
         cancel_url='http://localhost:5000/cancel',
     )
-
-    print(buy)
-    print("+" * 42)
     _id = buy.get("id")
-    print(_id)
-    user = helpers.get_user()
-    return render_template('subscribe.html', _id=_id, stripe_public_key=app.config["STRIPE_PUBLIC_KEY"], user=user)
+    current_user.subscription_id = _id
+    db.session.commit()
+    return render_template('subscribe.html', _id=_id, stripe_public_key=app.config["STRIPE_PUBLIC_KEY"], user=current_user)
 
 
 # -------- Subscription Succes Page ---------------------------------------------------------- #
 @app.route('/success')
 @login_required
 def success():
-    current_user.subscription = True
+    if stripe.Charge.retrieve(current_user.subscription_id)["paid"]:
+        current_user.is_subscribed = True
+        db.session.commit()
     return render_template('success.html')
 
 # -------- Subscription Cancel page ---------------------------------------------------------- #
@@ -118,7 +134,7 @@ def cancel():
 @login_required
 def upload():
     if current_user.is_authenticated:
-        if current_user.subscription:
+        if current_user.is_subscribed:
             if request.method == 'POST':
                 for key, f in request.files.items():
                     if key.startswith('file'):

@@ -12,10 +12,11 @@
 {% else %} 
   <h2>Wadup {{current_user.username}}?<h2>
   	<h3> You'll need to subscribe if you want to use our site. </h3><br>
+  	{{current_user.is_subscribed}}
   	<a href="/subscribe"><h3><b>Subscribe</b></h3></a>
 {% endif %}
 {% else %}
-	<h2> Hey there. </h2>
+	<h1><b> Hey there. </b></h1>
 	<h3> You'll need to register as a user and get a subscription if you want to use our site. </h3>
 	<br>
 	<a href="/register"><h3><b>Register</b></h3></a>
