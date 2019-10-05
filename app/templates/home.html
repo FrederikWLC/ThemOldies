@@ -6,7 +6,7 @@
 {% if current_user.is_authenticated %}
 {% if current_user.is_subscribed %}
 	<p class="title is-2"> Wadup, {{current_user.username}}? </p>
-	<p class="subtitle is-4"> Click the link below, if you want to go to the upload page</p>p>
+	<p class="subtitle is-4"> Click the link below, if you want to go to the upload page</p>
 	<br>
 	<a href="/upload"><p class="subtitle is-5"><b>Upload</b></p></a>
 {% else %} 
