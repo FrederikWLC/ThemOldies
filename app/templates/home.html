@@ -12,7 +12,6 @@
 {% else %} 
   <h2>Wadup {{current_user.username}}?<h2>
   	<h3> You'll need to subscribe if you want to use our site. </h3><br>
-  	{{current_user.is_subscribed}}
   	<a href="/subscribe"><h3><b>Subscribe</b></h3></a>
 {% endif %}
 {% else %}
@@ -26,5 +25,5 @@
 </section>
 {% endblock %}
 {% block scripts %}
-<script src="../static/js/scripts.js"></script>
+<script src="../static/js/navbar.js"></script>
 {% endblock %}
