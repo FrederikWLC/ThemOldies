@@ -129,7 +129,7 @@ def success():
 @app.route('/cancel')
 @login_required
 def cancel():
-    return "CANCELED!"
+    return "CANCELED"
 
 
 #---------- Dropzone -------------------------------------------------------------------------

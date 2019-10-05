@@ -5,20 +5,21 @@
 	<div class="hero-body">
 {% if current_user.is_authenticated %}
 {% if current_user.is_subscribed %}
-	<h2> Wadup, {{current_user.username}}? </h2>
-	<h3> Click the link below, if you want to go to the upload page. </h3>
+	<p class="title is-2"> Wadup, {{current_user.username}}? </p>
+	<p class="subtitle is-4"> Click the link below, if you want to go to the upload page</p>p>
 	<br>
-	<a href="/upload"><h3><b>Upload</b></h3></a>
+	<a href="/upload"><p class="subtitle is-5"><b>Upload</b></p></a>
 {% else %} 
-  <h2>Wadup {{current_user.username}}?<h2>
-  	<h3> You'll need to subscribe if you want to use our site. </h3><br>
-  	<a href="/subscribe"><h3><b>Subscribe</b></h3></a>
+  <p class="title is-2">Wadup {{current_user.username}}?</p>
+  	<p class="subtitle is-4"> You'll need to subscribe if you want to use our site </p>
+  	<br>
+  	<a href="/subscribe"><p class="subtitle is-5"><b>Subscribe</b></p></a>
 {% endif %}
 {% else %}
-	<h1><b> Hey there. </b></h1>
-	<h3> You'll need to register as a user and get a subscription if you want to use our site. </h3>
+	<p class="title is-2"> Hey there </p>
+	<p class="subtitle is-4"> You'll need to register as a user and get a subscription if you want to use our site </p>
 	<br>
-	<a href="/register"><h3><b>Register</b></h3></a>
+	<a href="/register"><p class="subtitle is-5"><b>Register</b></p></a>
 {% endif %}
 
   </div>
