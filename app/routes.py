@@ -133,19 +133,17 @@ def cancel():
 
 
 #---------- Dropzone -------------------------------------------------------------------------
-@app.route('/upload', methods=['POST', 'GET'])
+@app.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload():
-    if current_user.is_authenticated:
-        if current_user.is_subscribed:
-            if request.method == 'POST':
-                for key, f in request.files.items():
-                    if key.startswith('file'):
-                        # Handling of .csv file
-                        pass
-            return render_template('upload.html')
-        return redirect(url_for("index"))
-    return redirect(url_for("login"))
+    if current_user.is_subscribed:
+        if request.method == 'POST':
+            for key, f in request.files.items():
+                if key.startswith('file'):
+                    # Handling of .csv file
+                    print("Received a file")
+        return render_template('upload.html')
+    return redirect(url_for("index"))
 
 
 
