@@ -41,7 +41,7 @@ def login():
 def logout():
     logout_user()
     print("Succesfully logged out")
-    return redirect(url_for('índex'))
+    return redirect(url_for('home'))
 
 
 # -------- Signin Page ---------------------------------------------------------- #
