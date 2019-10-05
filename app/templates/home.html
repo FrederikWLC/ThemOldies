@@ -8,13 +8,13 @@
 {% if current_user.is_subscribed %}
 	
 	<p class="title is-2"> Wadup, {{current_user.username}}? </p>
-  <br class="custom-break small">
+  <br class="small-break">
 	<p class="subtitle is-4"> Click the link below, if you want to go to the upload page</p>
 	<br>
 	<a href="/upload"><p class="subtitle is-4"><b>Upload</b></p></a>
 {% else %} 
   <p class="title is-2">Wadup {{current_user.username}}?</p>
-  <br class="custom-break small">
+  <br class="small-break">
   	<p class="subtitle is-4"> You'll need to subscribe if you want to use our site </p>
   	<br>
   	<a href="/subscribe"><p class="subtitle is-4"><b>Subscribe</b></p></a>
@@ -41,11 +41,12 @@
 <section class="hero is-primary is-bold is-large">
 	<div class="hero-body">
 	<p class="title is-2"> Hey there </p>
-	<br class="custom-break small">
+	<br class="small-break">
 	<p class="subtitle is-4"> You'll need to register as a user and get a subscription if you want to use our site </p>
 	<br>
 	<a href="/register"><p class="subtitle is-4"><b>Register</b></p></a>
 {% endif %}
+
 </div>
 </section>
 

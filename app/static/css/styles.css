@@ -28,16 +28,9 @@
   padding: 30px;
 }
 
-.custom-break {
-    display: block; /* makes it have a width */
+.small-break {
+    display: none; /* makes it have a width */
     content: ""; /* clears default height */
+    margin-top: 0;
     
-}
-
-.small {
-  margin-top: 50; 
-}
-
-.large {
-  margin-top: 1000;
 }

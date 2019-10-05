@@ -6,11 +6,6 @@ function message(status, shake=false, id="") {
   document.getElementById("feedback").innerHTML = status;
   $("#feedback").show().delay(2000).fadeOut();
 }
-
-function error(type) {
-  $("."+type).css("border-color", "#E14448");
-}
-
   
  $(document).on("click", "#register-button", function() {
    console.log("REGISTER");
@@ -38,7 +33,7 @@ function error(type) {
       success(response) {
           var status = JSON.parse(response)["status"];
           if (status === "Successfully logged in") { location.reload(); }
-          else{message(status, true, "register-box");}
+          else{message(status, true, "login-box");}
           
 
     }});
