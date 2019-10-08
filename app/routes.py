@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
-from flask import redirect, url_for, render_template, request, session, flash
+from flask import redirect, url_for, render_template, request, session, flash, make_response
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 from app import app, db, dropzone
 from app.forms import LoginForm, RegistrationForm
 from app.models import User
+from app.generate import update_csv
+import codecs
+from csv import reader
 import json
 import stripe
+from werkzeug.wrappers import Response
+
 
 # ======== Routing =========================================================== #
 # -------- Login ------------------------------------------------------------- #
@@ -138,15 +143,21 @@ def cancel():
 def upload():
     if current_user.is_subscribed:
         if request.method == 'POST':
-            for key, f in request.files.items():
+            for key, file in request.files.items():
                 if key.startswith('file'):
-                    # Handling of .csv file
-                    print("Received a file")
+                    output = make_response(update_csv(file=list(reader(codecs.iterdecode(file, 'utf-8')))))
+                    output.headers["Content-Disposition"] = "attachment; filename=predictions.csv"
+                    output.headers["Content-type"] = "text/csv"
+                    return output
         return render_template('upload.html')
     return redirect(url_for("index"))
 
 
-
-# ======== Main ============================================================== #
-if __name__ == "__main__":
-    app.run(debug=True, use_reloader=True)
+#---------- Get updated csv file with predictions -------------------------------------------------------------------------
+@app.route('/download/<filename>', methods=['GET', 'POST'])
+def download():
+    updated_csv = update_csv(request.args.get("csvfile"))
+    response = Response(updated_csv, mimetype="text/css")
+    response.headers.set("Content-Disposition",
+                         "attachment", filename="predictions.csv")
+    return response
