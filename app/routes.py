@@ -145,19 +145,11 @@ def upload():
         if request.method == 'POST':
             for key, file in request.files.items():
                 if key.startswith('file'):
-                    output = make_response(update_csv(file=list(reader(codecs.iterdecode(file, 'utf-8')))))
-                    output.headers["Content-Disposition"] = "attachment; filename=predictions.csv"
-                    output.headers["Content-type"] = "text/csv"
-                    return output
+                    #update_csv(file=list(reader(codecs.iterdecode(file, 'utf-8'))))
+                    csvfile = "Address;First name;Last name; Predictions\n2314 NYC;Jens;Jensen;$1,000,000"
+                    #---------- Get updated csv file with predictions
+                    response = json.dumps({'file': csvfile})
+                    print(response)
+                    return response
         return render_template('upload.html')
     return redirect(url_for("index"))
-
-
-#---------- Get updated csv file with predictions -------------------------------------------------------------------------
-@app.route('/download/<filename>', methods=['GET', 'POST'])
-def download():
-    updated_csv = update_csv(request.args.get("csvfile"))
-    response = Response(updated_csv, mimetype="text/css")
-    response.headers.set("Content-Disposition",
-                         "attachment", filename="predictions.csv")
-    return response

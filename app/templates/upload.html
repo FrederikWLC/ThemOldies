@@ -9,13 +9,29 @@
 {% block body %}
 <section class="hero is-primary is-bold is-large">
   <div class="hero-body">
-  	<p class="title is-2"> Drop your csv file including the adresses here </p>
+  	<p class="title is-2"> Drop your csv file including the addresses here </p>
 {{ dropzone.create('/upload') }}
 <button id="upload">Upload</button>
 {{ dropzone.load_js() }}
-{{ dropzone.config() }}
+{{ dropzone.config(custom_init="this.on('success', function(info,response)
+	{
+	var csvfile = JSON.parse(response)['file'];
+	console.log(csvfile);
+	console.log('Successfully downloaded file!')
+	const blob = new Blob([csvfile], {type:'text/csv'});
+	const url = window.URL.createObjectURL(blob);
+	const a = document.createElement('a');
+	a.setAttribute('hidden','');
+	a.setAttribute('href', url);
+	a.setAttribute('download', 'predictions.csv');
+	document.body.appendChild(a)
+	a.click();
+	document.body.removeChild(a);})") }}
 </div> </section>
 {% endblock %}
 {% block scripts %}
 <script src="../static/js/navbar.js"></script>
+<script type="text/javascript">
+	
+</script>
 {% endblock %}
