@@ -2,7 +2,7 @@
 
 To run the program, first install the packages by typing this line into your console with the current directory being the one that contains this application.
 ```
-pip install -r requirement.txt
+pip install -r requirements.txt
 ```
 Then type in this command
 ```
