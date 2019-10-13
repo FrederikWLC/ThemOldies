@@ -12,4 +12,4 @@ You can then register, subscribe and upload a csv file including addresses in a 
 
 As an example csv file, you can make use of the example provided in this repository, called "example_input.csv".
 
-*This app is not yet complete because of errors in terms of communication between client and server and communication between server and the google streetview api. Therefore all it does for now is providing the user with price predictions of 'N/A'.
+*This app is not yet complete because of errors in terms of communication between client and server and communication between server and the google streetview api. Therefore all it does for now is providing the user with price predictions of 'N/A'.*
