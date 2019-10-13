@@ -5,13 +5,12 @@ from werkzeug.urls import url_parse
 from app import app, db, dropzone
 from app.forms import LoginForm, RegistrationForm
 from app.models import User
-from app.generate import update_csv
+from app.generate import update_csv, load_model
 import codecs
 from csv import reader
 import json
 import stripe
 from werkzeug.wrappers import Response
-from generate import *
 
 
 # ======== Routing =========================================================== #
@@ -143,13 +142,20 @@ def cancel():
 @login_required
 def upload():
     if current_user.is_subscribed:
+        try:
+            response = response
+        except:
+            response = None
         model = load_model()
         if request.method == 'POST':
             for key, file in request.files.items():
                 if key.startswith('file'):
-                    csvfile = update_csv(model=model, file=list(reader(codecs.iterdecode(file, 'utf-8'))))
+                    csvfile = update_csv(model=model, file=list(reader(codecs.iterdecode(file, 'utf-8-sig'), delimiter=";")))
                     #---------- Get updated csv file with predictions
                     response = json.dumps({'file': csvfile})
+                    print("Sending response:")
+                    print(response)
                     return response
-        return render_template('upload.html')
+        print(response)
+        return render_template('upload.html', response=response)
     return redirect(url_for("index"))
