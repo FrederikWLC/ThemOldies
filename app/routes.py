@@ -11,6 +11,7 @@ from csv import reader
 import json
 import stripe
 from werkzeug.wrappers import Response
+from generate import *
 
 
 # ======== Routing =========================================================== #
@@ -142,10 +143,11 @@ def cancel():
 @login_required
 def upload():
     if current_user.is_subscribed:
+        model = load_model()
         if request.method == 'POST':
             for key, file in request.files.items():
                 if key.startswith('file'):
-                    csvfile = update_csv(file=list(reader(codecs.iterdecode(file, 'utf-8'))))
+                    csvfile = update_csv(model=model, file=list(reader(codecs.iterdecode(file, 'utf-8'))))
                     #---------- Get updated csv file with predictions
                     response = json.dumps({'file': csvfile})
                     return response
