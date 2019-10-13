@@ -1,33 +1,34 @@
+from app import app
 from csv import writer
 from io import StringIO
 from geopy.geocoders import Nominatim
 import google_streetview.api
+#from algorithm import model
 
 
 def update_csv(file):
     data = StringIO()
     author = writer(data)
     # Write some rows
-    for row in file:
-        author.writerow(row)
+    for i, row in enumerate(file):
+        if i == 0:
+            address_index = row.index("Address")
+            author.writerow(row + ["Predicted price"])
+        else:
+            address = row[address_index]
+            #predicted_price = model.predict(get_input(address))
+            author.writerow(row + [predicted_price])
     return data.getvalue()
 
 
-"""geolocator = Nominatim(user_agent="ThemOldies", timeout=None)
-    print("Received a file")
-    csvfile = list(csv.reader(codecs.iterdecode(file, 'utf-8'), delimiter=";"))
-    address_index = csvfile[0].index("Addresses")
-    csvfile[0].append("Predicted Prices")
-    updated_csv = ""
-    for i, row in enumerate(csvfile):
-
-        if row is None:
-            break
-        address = row[address_index]
-        location = "location"
-        if location:
-            predicted_price = "$"
-        else:
-            predicted_price = "N/A"
-            row.append(predicted_price)
-            updated_csv += ";".join(row) + "\n" """
+def get_input():
+    geolocator = Nominatim(user_agent="ThemOldies", timeout=None)
+    coordinates = geolocator.latitude, geolocator.longitude
+    params = [{
+        'size': '250x250',  # max 640x640 pixels
+        'location': str(coordinates),
+        'heading': '0',
+        'pitch': '-0.76',
+        'key': app.config["STREETVIEW_KEY"]
+    }]
+    results = google_streetview.api.results(params)

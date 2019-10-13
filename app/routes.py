@@ -145,11 +145,9 @@ def upload():
         if request.method == 'POST':
             for key, file in request.files.items():
                 if key.startswith('file'):
-                    #update_csv(file=list(reader(codecs.iterdecode(file, 'utf-8'))))
-                    csvfile = "Address;First name;Last name; Predictions\n2314 NYC;Jens;Jensen;$1,000,000"
+                    csvfile = update_csv(file=list(reader(codecs.iterdecode(file, 'utf-8'))))
                     #---------- Get updated csv file with predictions
                     response = json.dumps({'file': csvfile})
-                    print(response)
                     return response
         return render_template('upload.html')
     return redirect(url_for("index"))
