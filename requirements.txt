@@ -49,7 +49,7 @@ greenlet==0.4.15
 grpcio==1.23.0
 guess-language-spirit==0.5.3
 h5py==2.9.0
-httplib2==0.14.0
+httplib2==0.18.0
 idna==2.8
 ipykernel==5.1.2
 ipython==7.8.0
